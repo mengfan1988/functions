@@ -1707,7 +1707,55 @@ function delDirAndFile($dirName)
         if (rmdir($dirName)) return true;//删除空文件夹
     }
 }
+//判断浏览器类型方法：
+function userBrowser() {
+    $user_OSagent = $_SERVER['HTTP_USER_AGENT'];
 
+    if (strpos($user_OSagent, "Maxthon") && strpos($user_OSagent, "MSIE")) {
+        $visitor_browser = "Maxthon(Microsoft IE)";
+    } elseif (strpos($user_OSagent, "Maxthon 2.0")) {
+        $visitor_browser = "Maxthon 2.0";
+    } elseif (strpos($user_OSagent, "Maxthon")) {
+        $visitor_browser = "Maxthon";
+    } elseif (strpos($user_OSagent, "MSIE 9.0")) {
+        $visitor_browser = "MSIE 9.0";
+    } elseif (strpos($user_OSagent, "MSIE 8.0")) {
+        $visitor_browser = "MSIE 8.0";
+    } elseif (strpos($user_OSagent, "MSIE 7.0")) {
+        $visitor_browser = "MSIE 7.0";
+    } elseif (strpos($user_OSagent, "MSIE 6.0")) {
+        $visitor_browser = "MSIE 6.0";
+    } elseif (strpos($user_OSagent, "MSIE 5.5")) {
+        $visitor_browser = "MSIE 5.5";
+    } elseif (strpos($user_OSagent, "MSIE 5.0")) {
+        $visitor_browser = "MSIE 5.0";
+    } elseif (strpos($user_OSagent, "MSIE 4.01")) {
+        $visitor_browser = "MSIE 4.01";
+    } elseif (strpos($user_OSagent, "MSIE")) {
+        $visitor_browser = "MSIE 较高版本";
+    } elseif (strpos($user_OSagent, "NetCaptor")) {
+        $visitor_browser = "NetCaptor";
+    } elseif (strpos($user_OSagent, "Netscape")) {
+        $visitor_browser = "Netscape";
+    } elseif (strpos($user_OSagent, "Chrome")) {
+        $visitor_browser = "Chrome";
+    } elseif (strpos($user_OSagent, "Lynx")) {
+        $visitor_browser = "Lynx";
+    } elseif (strpos($user_OSagent, "Opera")) {
+        $visitor_browser = "Opera";
+    } elseif (strpos($user_OSagent, "Konqueror")) {
+        $visitor_browser = "Konqueror";
+    } elseif (strpos($user_OSagent, "Mozilla/5.0")) {
+        $visitor_browser = "Mozilla";
+    } elseif (strpos($user_OSagent, "Firefox")) {
+        $visitor_browser = "Firefox";
+    } elseif (strpos($user_OSagent, "U")) {
+        $visitor_browser = "Firefox";
+    } else {
+        $visitor_browser = "其它";
+    }
+    return $visitor_browser;
+}
 //字体转换
 function zt($text)
 {
@@ -1866,6 +1914,31 @@ function GetIpLookup($ip = '')
     return $data;
 }
 
+// curl
+function curl( $url, $fields = [ ] ) {
+    $ch = curl_init();
+    //设置我们请求的地址
+    curl_setopt( $ch, CURLOPT_URL, $url );
+    //数据返回后不要直接显示
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+    //禁止证书校验
+    curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+    curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+    if ( $fields ) {
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 30 );
+        curl_setopt( $ch, CURLOPT_POST, 1 );
+        curl_setopt( $ch, CURLOPT_POSTFIELDS, $fields );
+    }
+    $data = '';
+    if ( curl_exec( $ch ) ) {
+        //发送成功,获取数据
+        $data = curl_multi_getcontent( $ch );
+    }
+    curl_close( $ch );
+
+    return $data;
+
+}
 // curl_post
 function http_post($api_url = '', $param = array(), $timeout = 5)
 {
@@ -2290,4 +2363,254 @@ function arrayToXml($arr,$dom=0,$item=0){
         }
     }
     return $dom->saveXML();
+}
+//二维数组模糊查询
+function arrList($arrs,$keywords=NULL,$type=array('title')){
+    $result= array();
+    foreach ($arrs as $key => $searchData) {
+        $arr = array();
+        foreach($searchData as $values=>$v ) {
+            for ($i=0;$i<count($type);$i++){
+                if ($values==$type[$i]){
+                    array_push($arr, $values);
+                }
+            }
+        }
+        for ($a=0;$a<count($arr);$a++){
+            if (strpos($searchData[$arr[$a]],$keywords)) {
+                $result[] = $searchData;
+            }
+        }
+    }
+    return $result;
+}
+/**
+ * 生成登陆验证码，并写入session['verification_code']
+ *
+ * @param int $length
+ * @param int $width
+ * @param int $height
+ */
+function create_verification_code($length, $width, $height)
+{
+    $code = "";
+    for ($i = 0; $i < $length; $i++) {
+        $code .= rand(0, 9);
+    }
+    // 4位验证码也可以用rand(1000,9999)直接生成
+    // 将生成的验证码写入session，备验证时用
+    $_SESSION ["verification_code"] = $code;
+    // 创建图片，定义颜色值
+    header("Content-type: image/PNG");
+    $im = imagecreate($width, $height);
+    $black = imagecolorallocate($im, 0, 0, 0);
+    $gray = imagecolorallocate($im, 200, 200, 200);
+    $bgcolor = imagecolorallocate($im, 255, 255, 255);
+    // 填充背景
+    imagefill($im, 0, 0, $gray);
+
+    // 画边框
+    imagerectangle($im, 0, 0, $width - 1, $height - 1, $black);
+
+    // 随机绘制两条虚线，起干扰作用
+    $style = array($black, $black, $black, $black, $black, $gray, $gray, $gray, $gray, $gray);
+    imagesetstyle($im, $style);
+    $y1 = rand(0, $height);
+    $y2 = rand(0, $height);
+    $y3 = rand(0, $height);
+    $y4 = rand(0, $height);
+    imageline($im, 0, $y1, $width, $y3, IMG_COLOR_STYLED);
+    imageline($im, 0, $y2, $width, $y4, IMG_COLOR_STYLED);
+
+    // 在画布上随机生成大量黑点，起干扰作用;
+    for ($i = 0; $i < 80; $i++) {
+        imagesetpixel($im, rand(0, $width), rand(0, $height), $black);
+    }
+    // 将数字随机显示在画布上,字符的水平间距和位置都按一定波动范围随机生成
+    $strx = rand(13, 18);
+    for ($i = 0; $i < $length; $i++) {
+        $strpos = rand(6, 9);
+        imagestring($im, 5, $strx, $strpos, substr($code, $i, 1), $black);
+        $strx += rand(8, 12);
+    }
+    imagepng($im); // 输出图片
+    imagedestroy($im); // 释放图片所占内存
+}
+//下载
+function downfile($file)
+{
+    $filename=$file; //文件名
+    $date=date("Ymd-H:i:m");
+    Header( "Content-type:  application/octet-stream ");
+    Header( "Accept-Ranges:  bytes ");
+    Header( "Accept-Length: " .filesize($filename));
+    header( "Content-Disposition:  attachment;  filename= {$date}.doc");
+    echo file_get_contents($filename);
+    readfile($filename);
+}
+//生成彩虹字
+function color_txt($str){
+    $len        = mb_strlen($str);
+    $colorTxt   = '';
+    for($i=0; $i<$len; $i++) {
+        $colorTxt .=  '<span style="color:'.rand_color().'">'.mb_substr($str,$i,1,'utf-8').'</span>';
+    }
+    return $colorTxt;
+}
+function rand_color(){
+    return '#'.sprintf("%02X",mt_rand(0,255)).sprintf("%02X",mt_rand(0,255)).sprintf("%02X",mt_rand(0,255));
+}
+/**
+ * all_external_link 检测字符串是否包含外链
+ * @param  string  $text 文字
+ * @param  string  $host 域名
+ * @return boolean       false 有外链 true 无外链
+ */
+function all_external_link($text = '', $host = '') {
+    if (empty($host)) $host = $_SERVER['HTTP_HOST'];
+    $reg = '/http(?:s?):\/\/((?:[A-za-z0-9-]+\.)+[A-za-z]{2,4})/';
+    preg_match_all($reg, $text, $data);
+    $math = $data[1];
+    foreach ($math as $value) {
+        if($value != $host) return false;
+    }
+    return true;
+}
+/**
+ * 友好的时间显示
+ *
+ * @param int    $sTime 待显示的时间
+ * @param string $type  类型. normal | mohu | full | ymd | other
+ * @param string $alt   已失效
+ * @return string
+ */
+function friendlyDate($sTime,$type = 'normal',$alt = 'false') {
+    //sTime=源时间，cTime=当前时间，dTime=时间差
+    $cTime        =    time();
+    $dTime        =    $cTime - $sTime;
+    $dDay        =    intval(date("z",$cTime)) - intval(date("z",$sTime));
+    //$dDay        =    intval($dTime/3600/24);
+    $dYear        =    intval(date("Y",$cTime)) - intval(date("Y",$sTime));
+    //normal：n秒前，n分钟前，n小时前，日期
+    if($type=='normal'){
+        if( $dTime < 60 ){
+            return $dTime."秒前";
+        }elseif( $dTime < 3600 ){
+            return intval($dTime/60)."分钟前";
+            //今天的数据.年份相同.日期相同.
+        }elseif( $dYear==0 && $dDay == 0  ){
+            //return intval($dTime/3600)."小时前";
+            return '今天'.date('H:i',$sTime);
+        }elseif($dYear==0){
+            return date("m月d日 H:i",$sTime);
+        }else{
+            return date("Y-m-d H:i",$sTime);
+        }
+    }elseif($type=='mohu'){
+        if( $dTime < 60 ){
+            return $dTime."秒前";
+        }elseif( $dTime < 3600 ){
+            return intval($dTime/60)."分钟前";
+        }elseif( $dTime >= 3600 && $dDay == 0  ){
+            return intval($dTime/3600)."小时前";
+        }elseif( $dDay > 0 && $dDay<=7 ){
+            return intval($dDay)."天前";
+        }elseif( $dDay > 7 &&  $dDay <= 30 ){
+            return intval($dDay/7) . '周前';
+        }elseif( $dDay > 30 ){
+            return intval($dDay/30) . '个月前';
+        }
+        //full: Y-m-d , H:i:s
+    }elseif($type=='full'){
+        return date("Y-m-d , H:i:s",$sTime);
+    }elseif($type=='ymd'){
+        return date("Y-m-d",$sTime);
+    }else{
+        if( $dTime < 60 ){
+            return $dTime."秒前";
+        }elseif( $dTime < 3600 ){
+            return intval($dTime/60)."分钟前";
+        }elseif( $dTime >= 3600 && $dDay == 0  ){
+            return intval($dTime/3600)."小时前";
+        }elseif($dYear==0){
+            return date("Y-m-d H:i:s",$sTime);
+        }else{
+            return date("Y-m-d H:i:s",$sTime);
+        }
+    }
+}
+//截取字符变省略号
+function subtext($text, $length)
+{
+    if(mb_strlen($text, 'utf8') > $length)
+        return mb_substr($text, 0, $length, 'utf8').'...';
+    return $text;
+}
+//相对路劲转绝对
+function dirToHttpUrl($file) {
+    //判断文件是否存在
+    if (!file_exists($file)) {
+        return false;
+    }
+    //域名
+    $nowUrl = dirname('http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF']);    //当前域名
+    $tempUrl = explode('.', $_SERVER['HTTP_HOST']);
+    $dirUrl = 'http://www.'.$tempUrl[1].'.'.$tempUrl[2].'/';                    //主域名
+    //文件路径的层次统计
+    $tempFile = explode('../', $file);
+    $tempNum = array_count_values($tempFile);
+    if (array_key_exists('', $tempNum)) {
+        $fileNum = $tempNum[''];
+        $fileEnd = end($tempFile);
+    } else {
+        $fileNum = 0;
+        $fileEnd = '/'.substr($tempFile[0], 2);
+    }
+    //域名层次统计
+    $tempWeb = explode('/', $nowUrl);
+    $tempWeb = array_slice($tempWeb, 3);
+    $webNum = count($tempWeb);
+    //文件对应的域名
+    if ($fileNum > $webNum) {
+        $nowUrl = $dirUrl;
+    }
+    //返回
+    return $nowUrl.$fileEnd;
+}
+//判断是否是手机端
+function isMobile() {
+    // 如果有HTTP_X_WAP_PROFILE则一定是移动设备
+    if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
+        return true;
+    }
+    // 如果via信息含有wap则一定是移动设备,部分服务商会屏蔽该信息
+    if (isset($_SERVER['HTTP_VIA'])) {
+        // 找不到为flase,否则为true
+        return stristr($_SERVER['HTTP_VIA'], "wap") ? true : false;
+    }
+    // 脑残法，判断手机发送的客户端标志,兼容性有待提高。其中'MicroMessenger'是电脑微信
+    if (isset($_SERVER['HTTP_USER_AGENT'])) {
+        $clientkeywords = array('nokia','sony','ericsson','mot','samsung','htc','sgh','lg','sharp','sie-','philips','panasonic','alcatel','lenovo','iphone','ipod','blackberry','meizu','android','netfront','symbian','ucweb','windowsce','palm','operamini','operamobi','openwave','nexusone','cldc','midp','wap','mobile','MicroMessenger');
+        // 从HTTP_USER_AGENT中查找手机浏览器的关键字
+        if (preg_match("/(" . implode('|', $clientkeywords) . ")/i", strtolower($_SERVER['HTTP_USER_AGENT']))) {
+            return true;
+        }
+    }
+    // 协议法，因为有可能不准确，放到最后判断
+    if (isset ($_SERVER['HTTP_ACCEPT'])) {
+        // 如果只支持wml并且不支持html那一定是移动设备
+        // 如果支持wml和html但是wml在html之前则是移动设备
+        if ((strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') !== false) && (strpos($_SERVER['HTTP_ACCEPT'], 'text/html') === false || (strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') < strpos($_SERVER['HTTP_ACCEPT'], 'text/html')))) {
+            return true;
+        }
+    }
+    return false;
+}
+//微信端
+function isWeixin() {
+    if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
+        return true;
+    } else {
+        return false;
+    }
 }
