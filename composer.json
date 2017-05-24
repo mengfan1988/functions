@@ -1,0 +1,16 @@
+{
+    "name": "mengfan1988/functions",
+    "description": "functions",
+    "type": "project",
+    "require": {
+        "houdunwang/hdphp": "*"
+    },
+    "license": "mit",
+    "authors": [
+        {
+            "name": "mengfan",
+            "email": "340562435@qq.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
