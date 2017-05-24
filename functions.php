@@ -1811,7 +1811,19 @@ function genTree($items, $pid = 'pid')
 
     return $tree;
 }
-
+//tree无限分类
+function tree($arr, $pid = 0, $lev = 0)
+{
+    static $list = array();
+    foreach ($arr as $v) {
+        if ($v['pid'] == $pid) {
+            echo str_repeat('-', $lev) . $v['name'] . '<br>';
+            $list[] = $v;
+            tree($arr, $v['id'], $lev + 1);
+        }
+    }
+    return $list;
+}
 //ip地址接口(1)(2) GetIp real_ip
 
 function GetIp()
@@ -2007,19 +2019,7 @@ function http_get($api_url = '', $timeout = 5)
     return $res;
 }
 
-//tree无限分类
-function tree($arr, $pid = 0, $lev = 0)
-{
-    static $list = array();
-    foreach ($arr as $v) {
-        if ($v['pid'] == $pid) {
-            echo str_repeat('-', $lev) . $v['name'] . '<br>';
-            $list[] = $v;
-            tree($arr, $v['id'], $lev + 1);
-        }
-    }
-    return $list;
-}
+
 
 //将内容进行UNICODE编码，编码后的内容格式：\u56fe\u7247 （原始：图片）
 function unicode_encode($name)
