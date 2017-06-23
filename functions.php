@@ -2614,3 +2614,53 @@ function isWeixin() {
         return false;
     }
 }
+//判断是否在线
+function writeover($filename,$data,$method = 'w',$chmod = 0){
+    $handle = fopen($filename, $method);
+    !handle && die("文件打开失败");
+    flock($handle, LOCK_EX);
+    fwrite($handle, $data);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+    $chmod && @chmod($filename, 0777);
+}
+//判断是否在线
+function count_online_num($time, $ip) {
+    $fileCount = './count.txt';
+    $count = 0;
+    $gap = 120; //2分钟不刷新页面就
+    if (!file_exists($fileCount)) {
+        $str = $time . "\t" . $ip . "\r\n";
+        writeover($fileCount, $str, 'w', 1);
+        $count = 1;
+    } else {
+        $arr = file($fileCount);
+        $flag = 0;
+        foreach($arr as $key => $val) {
+            $val= trim($val);
+            if ($val != "") {
+                list($when, $seti) = explode("\t", $val);
+                if ($seti ==$ip) {
+                    $arr[$key] = $time . "\t" . $seti;
+                    $flag = 1;
+                } else {
+                    $currentTime = time();
+                    if ($currentTime - $when > $gap) {
+                        unset($arr[$key]);
+                    }else{
+                        $arr[$key]=$val;
+                    }
+                }
+            }
+        }
+        if ($flag == 0) {
+            array_push($arr, $time . "\t" . $ip);
+        }
+        $count = count($arr);
+        $str = implode("\r\n", $arr);
+        $str.="\r\n";
+        writeover($fileCount, $str, 'w', 0);
+        unset($arr);
+    }
+    return $count;
+}
