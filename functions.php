@@ -1925,7 +1925,21 @@ function GetIpLookup($ip = '')
 
     return $data;
 }
+//此接口无访问频率限制
+function GetIpLookup1($ip = '')
+{
+    if ($ip == '') {
+        $url = "http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json";
+        $ip = json_decode(file_get_contents($url), true);
+        $data = $ip;
+    } else {
+        $url = "http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json&ip=".$ip;
+        $ip = json_decode(file_get_contents($url),true);
+        $data = $ip;
+    }
 
+    return $data;
+}
 // curl
 function curl( $url, $fields = [ ] ) {
     $ch = curl_init();
