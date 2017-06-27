@@ -2678,3 +2678,53 @@ function count_online_num($time, $ip) {
     }
     return $count;
 }
+/**
+* 遍历目录，结果存入数组。支持php4及以上。php5以后可用scandir()函数代替while循环。
+* @param string $dir
+* @return array
+*/
+function my_scandir($dir)
+{
+    $files = array();
+    if ( $handle = opendir($dir) ) {
+        while ( ($file = readdir($handle)) !== false ) 
+        {
+            if ( $file != ".." && $file != "." ) 
+            {
+                if ( is_dir($dir . "/" . $file) ) 
+                {
+                    $files[$file] = my_scandir($dir . "/" . $file);
+                }
+                else
+                {
+                    $files[] = $file;
+                }
+            }
+        }
+        closedir($handle);
+        return $files;
+    }
+}
+ 
+function my_scandir1($dir)
+{
+    $files = array();
+    $dir_list = scandir($dir);
+    foreach($dir_list as $file)
+    {
+        if ( $file != ".." && $file != "." ) 
+        {
+            if ( is_dir($dir . "/" . $file) ) 
+            {
+                $files[$file] = my_scandir1($dir . "/" . $file);
+            }
+            else
+            {
+                $files[] = $file;
+            }
+        }
+    }
+     
+    return $files;
+}
+ 
