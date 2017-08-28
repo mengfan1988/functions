@@ -3109,4 +3109,23 @@ function nongli($riqi)
     $nowday=$mten[$everymonth[$j][14]].$mtwelve[$everymonth[$j][15]]."年 ".$nlmon.$nlday;
     return $nowday;
 }
+//下载
+function DownloadAuth($Path,$DownFile,$isDeleteFile = false)
+{
+    $downloadfile = $Path."/".$DownFile;
+    if (!file_exists($downloadfile)) {
+        return -1;
+    }
+    // 打开文件
+    $fd = fopen($downloadfile,"r");
+    //输入文件标签
+    Header("Content-type: application/octet-stream");
+    header("Accept-Ranges: bytes");
+    header("Accept-Length: ".filesize($downloadfile));
+    Header( "Content-Length: " .filesize($downloadfile));
+    Header("Content-Disposition: attachment; filename=$DownFile");
 
+    while (!feof ($fd))
+    { echo fread($fd,50000); }
+    fclose ($fd);
+}
