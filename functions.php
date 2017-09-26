@@ -1815,10 +1815,10 @@ function genTree($items, $pid = 'pid')
 function tree($arr, $pid = 0, $lev = 0)
 {
     static $list = array();
-    foreach ($arr as $v) {
+    foreach ($arr as $k=>$v) {
         if ($v['pid'] == $pid) {
-            echo str_repeat('-', $lev) . $v['name'] . '<br>';
-            $list[] = $v;
+            $list[$k] = $v;
+            $list[$k]['level']=str_repeat('-', $lev);
             tree($arr, $v['id'], $lev + 1);
         }
     }
